@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import AppTranslation exposing (..)
-import Html exposing (Attribute, Html, button, div, img, input, label, text)
+import AppLocalisation exposing (..)
+import Html exposing (Attribute, Html, button, div, img, input, label, span, text)
 import Html.Attributes exposing (class, name, src, style, type_, value)
 import Html.Events exposing (onClick, onInput)
 
@@ -74,14 +74,22 @@ view model =
             translate model.currentLanguage <| PluralsText { number = model.pluralNumber }
     in
     div [ appStyle ]
-        [ div [ blockStyle ] [ viewLanguageSelect ]
-        , div [ blockStyle ] [ text simpleText ]
+        [ div [ blockStyle ]
+            [ div [ commentStyle ] [ text <| translate model.currentLanguage ButtonSwitchText ]
+            , viewLanguageSelect model.currentLanguage
+            ]
         , div [ blockStyle ]
-            [ input [ textInputStyle, onInput SetPlaceholderText, value model.placeholderText ] []
+            [ div [ commentStyle ] [ text <| translate model.currentLanguage Example1Text ]
+            , text simpleText
+            ]
+        , div [ blockStyle ]
+            [ div [commentStyle] [text <| translate model.currentLanguage Example2Text],
+                input [ textInputStyle, onInput SetPlaceholderText, value model.placeholderText ] []
             , text placeholderText
             ]
         , div [ blockStyle ]
-            [ text <| toString model.pluralNumber ++ " " ++ pluralsText
+            [ div [commentStyle] [text <| translate model.currentLanguage Example3Text],
+                text <| toString model.pluralNumber ++ " " ++ pluralsText
             , viewApples model.pluralNumber
             , viewCounter
                 model.pluralNumber
@@ -96,17 +104,17 @@ view model =
 viewCounter : Int -> Html Msg
 viewCounter value =
     div []
-        [ button [ onClick DecrementValue ] [ text "-" ]
-        , text <| toString value
+        [ button [ onClick DecrementValue ] [ text "−" ]
+        , span [ numeralCountStyle ] [ text <| toString value ]
         , button [ onClick IncrementValue ] [ text "+" ]
         ]
 
 
-viewLanguageSelect : Html Msg
-viewLanguageSelect =
+viewLanguageSelect : Language -> Html Msg
+viewLanguageSelect currentLanguage =
     div []
-        [ button [ onClick <| SetLanguage English, languageButtonStyle ] [ text "English" ]
-        , button [ onClick <| SetLanguage Russian, languageButtonStyle ] [ text "Русский" ]
+        [ button [ onClick <| SetLanguage English, getButtonStyle English currentLanguage ] [ text "English" ]
+        , button [ onClick <| SetLanguage Russian, getButtonStyle Russian currentLanguage ] [ text "Русский" ]
         ]
 
 
@@ -117,6 +125,14 @@ viewApples number =
             number
         <|
             img [ appleImageStyle, src "https://upload.wikimedia.org/wikipedia/commons/0/05/Apple.svg" ] []
+
+
+getButtonStyle : Language -> Language -> Attribute msg
+getButtonStyle language activeLanguage =
+    if language == activeLanguage then
+        activeButtonStyle
+    else
+        buttonStyle
 
 
 
@@ -133,19 +149,44 @@ blockStyle =
     style [ ( "padding-bottom", "2em" ) ]
 
 
-languageButtonStyle : Attribute msg
-languageButtonStyle =
+buttonStyle : Attribute msg
+buttonStyle =
     style
         [ ( "width", "150px" )
         , ( "height", "15%" )
-        , ( "background-color", "rgb(0, 120, 215)" )
         , ( "text-align", "center" )
         , ( "padding", "10px 10px" )
         , ( "margin-right", "20px" )
-        , ( "color", "#FFF  " )
         , ( "font-size", "1.2rem" )
-        , ( "cursor", "pointer" )
         , ( "border", "0px" )
+        , ( "background-color", "rgb(0, 120, 215)" )
+        , ( "color", "#FFF  " )
+        , ( "cursor", "pointer" )
+        ]
+
+
+activeButtonStyle : Attribute msg
+activeButtonStyle =
+    style
+        [ ( "width", "150px" )
+        , ( "height", "15%" )
+        , ( "text-align", "center" )
+        , ( "padding", "10px 10px" )
+        , ( "margin-right", "20px" )
+        , ( "font-size", "1.2rem" )
+        , ( "border", "0px" )
+        , ( "background-color", "rgb(150, 150, 150)" )
+        , ( "color", "#FFF  " )
+        , ( "cursor", "default" )
+        ]
+
+
+commentStyle : Attribute msg
+commentStyle =
+    style
+        [ ( "color", "rgb(150, 150, 150)" )
+        , ( "font-size", "1.1rem" )
+        , ( "padding-bottom", "10px" )
         ]
 
 
@@ -162,3 +203,8 @@ applesContainerStyle =
 appleImageStyle : Attribute msg
 appleImageStyle =
     style [ ( "height", "32px" ), ( "width", "32px" ), ( "border", "0px" ) ]
+
+
+numeralCountStyle : Attribute msg
+numeralCountStyle =
+    style [ ( "padding", "0px 20px" ) ]
